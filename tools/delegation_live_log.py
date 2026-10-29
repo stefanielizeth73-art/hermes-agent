@@ -85,7 +85,10 @@ def _joined(*parts: str) -> str:
 
 
 def _dump_json(path: Path, payload: dict[str, Any]) -> None:
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    from utils import atomic_write_text
+    # Paths may contain surrogateescaped filesystem bytes. JSON escapes round-trip them.
+    atomic_write_text(path, json.dumps(payload, indent=2, ensure_ascii=True),
+                      preserve_mode=True, create_mode=0o644)
 
 
 class LiveTranscriptWriter:
